@@ -9,7 +9,7 @@ A high-end, responsive Personal Finance Management Dashboard built with **React*
 
 ## ✨ Key Features
 
-### 📊 Advanced Analytics
+### 📊 Advanced Features 
 - **Multi-Month Trend Analysis**: Compare wealth progression across January, February, and March.
 - **Cumulative Growth Curves**: Logic-driven line charts that show real-time balance accumulation.
 - **Spending Breakdown**: Interactive donut charts with category-wise percentage impact.
