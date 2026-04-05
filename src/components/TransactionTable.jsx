@@ -140,7 +140,7 @@ const TransactionTable = () => {
 
                 {user?.currentRole === "admin" && (
                   <td className="py-4 px-4 text-center rounded-r-xl">
-                    <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex justify-center gap-2 ">
                       <button onClick={() => handleEditClick(item)} className="p-1.5 text-blue-500 hover:bg-blue-100 rounded-lg">
                         <SquarePen size={18} />
                       </button>
