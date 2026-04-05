@@ -58,26 +58,14 @@ A high-end, responsive Personal Finance Management Dashboard built with **React*
 │   ├── assets/             # Local component assets
 │   ├── components/         # Reusable UI components
 │   │   ├── modal/          # Transaction CRUD modals
-│   │   │   ├── AddTransactionModal.jsx
-│   │   │   └── UpdateTransactionModal.jsx
-│   │   ├── BalanceTrendChart.jsx
-│   │   ├── Insights.jsx
-│   │   ├── Navbar.jsx
-│   │   ├── SpendingPieChart.jsx
-│   │   ├── SummaryCard.jsx
-│   │   ├── SwitchUser.jsx
-│   │   └── TransactionTable.jsx
-│   ├── data/
-│   │   └── mockData.js      # Initial seed data (Jan-Mar 2026)
+│   │     
+│   ├── data/               # Initial seed data
+│   │        
 │   ├── pages/              # Main view containers
-│   │   ├── Homepage.jsx
-│   │   ├── Statistics.jsx
-│   │   └── TransactionSection.jsx
+│   │   
 │   ├── redux/              # State management
 │   │   ├── features/       # Redux slices
-│   │   │   ├── authSlice.js
-│   │   │   └── financeSlice.js
-│   │   └── store.js        # Global store configuration
+│   │
 │   ├── App.jsx             # Main routing & layout
 │   └── main.jsx            # Application entry point
 ├── package.json
