@@ -9,10 +9,11 @@ A high-end, responsive Personal Finance Management Dashboard built with **React*
 
 ## ✨ Key Features
 
-### 📊 Advanced Analytics
+### 📊 Advanced Features 
 - **Multi-Month Trend Analysis**: Compare wealth progression across January, February, and March.
 - **Cumulative Growth Curves**: Logic-driven line charts that show real-time balance accumulation.
 - **Spending Breakdown**: Interactive donut charts with category-wise percentage impact.
+- **Download CSV**: Added a feature that allows users to download transactions as a CSV file.
 
 ### 🔐 Role-Based Access Control (RBAC)
 - **Admin Role**: Full CRUD capabilities—Add, Edit, and Delete transactions.
@@ -58,26 +59,14 @@ A high-end, responsive Personal Finance Management Dashboard built with **React*
 │   ├── assets/             # Local component assets
 │   ├── components/         # Reusable UI components
 │   │   ├── modal/          # Transaction CRUD modals
-│   │   │   ├── AddTransactionModal.jsx
-│   │   │   └── UpdateTransactionModal.jsx
-│   │   ├── BalanceTrendChart.jsx
-│   │   ├── Insights.jsx
-│   │   ├── Navbar.jsx
-│   │   ├── SpendingPieChart.jsx
-│   │   ├── SummaryCard.jsx
-│   │   ├── SwitchUser.jsx
-│   │   └── TransactionTable.jsx
-│   ├── data/
-│   │   └── mockData.js      # Initial seed data (Jan-Mar 2026)
+│   │     
+│   ├── data/               # Initial seed data
+│   │        
 │   ├── pages/              # Main view containers
-│   │   ├── Homepage.jsx
-│   │   ├── Statistics.jsx
-│   │   └── TransactionSection.jsx
+│   │   
 │   ├── redux/              # State management
 │   │   ├── features/       # Redux slices
-│   │   │   ├── authSlice.js
-│   │   │   └── financeSlice.js
-│   │   └── store.js        # Global store configuration
+│   │
 │   ├── App.jsx             # Main routing & layout
 │   └── main.jsx            # Application entry point
 ├── package.json
