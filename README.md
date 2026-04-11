@@ -37,7 +37,7 @@ A high-end, responsive Personal Finance Management Dashboard built with **React*
 
 1. **Clone the repo**
    ```bash
-   git clone [https://github.com/VishalFulkar/Finance-Dashboard-UI.git](https://github.com/VishalFulkar/Finance-Dashboard-UI.git)
+   git clone https://github.com/VishalFulkar/Finance-Dashboard-UI.git
 
 2. **Install Dependencies**
    ```bash
