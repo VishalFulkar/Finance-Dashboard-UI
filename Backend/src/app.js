@@ -21,6 +21,13 @@ app.use(express.json());
 app.use(cookieParser());
 
 //Routes
+app.get("/", (req, res) => {
+    res.json({
+        status: "healthy",
+        message: "FinFlow Backend API is running successfully!"
+    });
+});
+
 app.use("/api/auth",authRoutes)
 app.use("/api/transaction",transactionRoutes)
 
