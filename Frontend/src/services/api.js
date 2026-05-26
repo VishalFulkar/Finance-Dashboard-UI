@@ -1,4 +1,16 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+let rawBaseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+// Remove trailing slash if present
+if (rawBaseUrl.endsWith('/')) {
+    rawBaseUrl = rawBaseUrl.slice(0, -1);
+}
+
+// Automatically append '/api' if not already present
+if (!rawBaseUrl.endsWith('/api')) {
+    rawBaseUrl += '/api';
+}
+
+const BASE_URL = rawBaseUrl;
 
 async function request(method, path, body, isFormData = false) {
     const options = {
