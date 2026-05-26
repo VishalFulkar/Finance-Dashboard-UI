@@ -50,8 +50,7 @@ FinFlow/
 │   │   └── services/         # Storage service integrations
 │   ├── .env                  # Port, JWT Secrets & Mongo URI (Ignored by git)
 │   ├── .gitignore
-│   ├── package.json
-│   └── seed.js               # Database seeding utility
+│   └── package.json
 └── Frontend/
     ├── src/
     │   ├── components/       # Analytics, charts, tables, navigation
@@ -98,18 +97,7 @@ MONGO_URI=mongodb+srv://<username>:<password>@cluster.xxxx.mongodb.net/finance-d
 JWT_SECRET=your_jwt_secret_key_here
 ```
 
-### Step 3: Seed Database (Optional)
-To test the application with realistic analytics instantly, you can seed the database with 53 transactions spread over 5 months (January–May 2026).
-
-1. Log in or register an account via the browser interface.
-2. Retrieve your Account `_id` (from MongoDB Atlas or Network logs).
-3. Paste the ID into `Backend/seed.js` or run:
-```bash
-cd Backend
-node seed.js <your_user_id>
-```
-
-### Step 4: Run the Servers
+### Step 3: Run the Servers
 Open two terminal windows to run both servers concurrently:
 
 **Terminal 1 (Backend Dev Server)**:
@@ -134,3 +122,10 @@ npm run dev
   * `ProtectedRoute`: Redirects unauthenticated users to `/login`.
   * `AuthRoute`: Blocks authenticated users from returning to Login/Register pages.
 * **Isolated User Scope**: Backend validation guarantees that a user can only perform read/write/delete tasks on transaction records bound strictly to their user ID.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
