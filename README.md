@@ -14,7 +14,7 @@ It provides users with deep insights into their wealth progression, interactive 
   * **Progression Line Graph**: Visualizing month-by-month net wealth growth.
   * **Breakdown Donut Chart**: Clear percentage analysis of expense categories.
   * **Balance Trend area Chart**: Dynamic closing balances and cumulative wealth.
-* **💡 AI-Powered Insights Engine**: Dynamic calculation of Savings Rate, Top spending categories, and Month-over-Month (MoM) changes comparing current vs. previous periods.
+* **💡 Insights Engine**: Dynamic calculation of Savings Rate, Top spending categories, and Month-over-Month (MoM) changes comparing current vs. previous periods.
 * **📁 Smart Searching & Filtering**: Instantly search records by Date, Description, Category, or Amount, and filter by income/expense type and period.
 * **🛠️ Complete CRUD Operations**: Add, update, and delete transactions instantly reflected in overall statistics.
 
