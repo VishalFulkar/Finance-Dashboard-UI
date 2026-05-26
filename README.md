@@ -1,85 +1,136 @@
-# 💎  Premium Finance Dashboard UI
+# 📊 FinFlow - SaaS Wealth Progression Dashboard
 
-A high-end, responsive Personal Finance Management Dashboard built with **React**, **Redux Toolkit**, and **Tailwind CSS**. Designed with a focus on glassmorphism, smooth data transitions, and a "Premium SaaS" aesthetic.
+A modern, full-stack **MERN (MongoDB, Express, React, Node.js)** personal finance tracker and dashboard designed with premium aesthetics, fluid micro-animations, and secure multi-user architecture. 
 
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Redux](https://img.shields.io/badge/Redux-593D88?style=for-the-badge&logo=redux&logoColor=white)
-![Tailwind](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
-![Framer](https://img.shields.io/badge/Framer_Motion-0055FF?style=for-the-badge&logo=framer&logoColor=white)
+It provides users with deep insights into their wealth progression, interactive charts, and secure transaction tracking with absolute privacy through robust database-level isolation.
 
-## ✨ Key Features
+---
 
-### 📊 Advanced Features 
-- **Multi-Month Trend Analysis**: Compare wealth progression across January, February, and March.
-- **Cumulative Growth Curves**: Logic-driven line charts that show real-time balance accumulation.
-- **Spending Breakdown**: Interactive donut charts with category-wise percentage impact.
-- **Download CSV**: Added a feature that allows users to download transactions as a CSV file.
+## 🌟 Key Features
 
-### 🔐 Role-Based Access Control (RBAC)
-- **Admin Role**: Full CRUD capabilities—Add, Edit, and Delete transactions.
-- **Viewer Role**: Read-only access to charts and history.
-- **User Switching**: Integrated UI to toggle between profiles seamlessly.
+* **🔒 Multi-User Secure Auth**: Custom registration and login processes with persistent sessions powered by encrypted HTTP-Only cookies to protect sensitive financial records.
+* **🖼️ Profile Avatars**: Multi-part registration allowing custom profile photo uploads, securely stored and served.
+* **⚡ Live Financial Analytics**: Dynamic interactive charts powered by **Recharts**:
+  * **Progression Line Graph**: Visualizing month-by-month net wealth growth.
+  * **Breakdown Donut Chart**: Clear percentage analysis of expense categories.
+  * **Balance Trend area Chart**: Dynamic closing balances and cumulative wealth.
+* **💡 AI-Powered Insights Engine**: Dynamic calculation of Savings Rate, Top spending categories, and Month-over-Month (MoM) changes comparing current vs. previous periods.
+* **📁 Smart Searching & Filtering**: Instantly search records by Date, Description, Category, or Amount, and filter by income/expense type and period.
+* **🛠️ Complete CRUD Operations**: Add, update, and delete transactions instantly reflected in overall statistics.
 
-### 📱 Premium UX/UI
-- **Responsive Navigation**: A hybrid sidebar that transforms into a smooth Framer Motion drawer on mobile.
-- **Glassmorphism Design**: Soft gradients, high-radius corners (`2.5rem`), and subtle backdrop blurs.
-- **Localized Formatting**: Automatic `INR` currency formatting (e.g., ₹85,000).
+---
 
-## 🚀 Tech Stack
+## 🛠️ Tech Stack
 
-- **Core**: React 18
-- **State**: Redux Toolkit
-- **Charts**: Recharts
-- **Icons**: Lucide-React
-- **Animations**: Framer Motion
-- **Routing**: React Router Dom v6
+### Frontend
+* **Core**: React 18, React Router DOM (v6)
+* **State Management**: Redux Toolkit (`createAsyncThunk` for async operations)
+* **Visual Data**: Recharts, Lucide Icons
+* **Styling**: Modern CSS variables, glassmorphic themes, responsive grids
 
-## 🛠️ Installation
+### Backend
+* **Core**: Node.js, Express.js
+* **Database**: MongoDB & Mongoose
+* **Security**: JSON Web Tokens (JWT), bcryptjs for passwords, HTTP-Only Cookie session management
+* **File Uploads**: Multer & custom cloud storage handling
 
-1. **Clone the repo**
-   ```bash
-   git clone https://github.com/VishalFulkar/Finance-Dashboard-UI.git
-
-2. **Install Dependencies**
-   ```bash
-   npm install
-
-3. Start Development Server
-   ```bash
-   npm run dev
-
+---
 
 ## 📂 Project Structure
-``` text
-  FINANCE DASHBOARD UI
-├── public/
-│   ├── assets/             # Global static images/icons
-│   └── vite.svg
-├── src/
-│   ├── assets/             # Local component assets
-│   ├── components/         # Reusable UI components
-│   │   ├── modal/          # Transaction CRUD modals
-│   │     
-│   ├── data/               # Initial seed data
-│   │        
-│   ├── pages/              # Main view containers
-│   │   
-│   ├── redux/              # State management
-│   │   ├── features/       # Redux slices
-│   │
-│   ├── App.jsx             # Main routing & layout
-│   └── main.jsx            # Application entry point
-├── package.json
-└── vite.config.js
+
+```text
+FinFlow/
+├── Backend/
+│   ├── src/
+│   │   ├── controllers/      # Auth & Transaction route controllers
+│   │   ├── db/               # Database connection setup
+│   │   ├── middleware/       # JWT Cookie verification middleware
+│   │   ├── models/           # Mongoose schemas (User & Transaction)
+│   │   ├── routes/           # Router groups (Express)
+│   │   └── services/         # Storage service integrations
+│   ├── .env                  # Port, JWT Secrets & Mongo URI (Ignored by git)
+│   ├── .gitignore
+│   ├── package.json
+│   └── seed.js               # Database seeding utility
+└── Frontend/
+    ├── src/
+    │   ├── components/       # Analytics, charts, tables, navigation
+    │   │   └── modal/        # Create & Update Modals
+    │   ├── pages/            # Homepage, Statistics, Auth, Transactions
+    │   ├── redux/            # Store configurations and slices (auth, finance)
+    │   ├── services/         # Credential-inclusive Fetch API wrappers
+    │   ├── App.jsx           # Main router & Route guards (Protected & Auth)
+    │   └── main.jsx
+    ├── index.html
+    └── package.json
 ```
 
-## ---
+---
 
-## 👨‍💻 Developed By
+## ⚙️ Setup & Installation
 
-**Vishal Fulkar** 
+### Prerequisite
+* [Node.js](https://nodejs.org/) installed
+* Running [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) cluster or a local MongoDB community instance
 
-[![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/VishalFulkar)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/VishalFulkar)
+### Step 1: Clone and Install Dependencies
 
-> "Building digital solutions for a better financial future."
+```bash
+# Clone the repository
+git clone <your-repository-url>
+cd "FinFlow"
+
+# Install backend dependencies
+cd Backend
+npm install
+
+# Install frontend dependencies
+cd ../Frontend
+npm install
+```
+
+### Step 2: Environment Configurations
+Create a `.env` file in the **`Backend/`** folder:
+
+```env
+PORT=3000
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.xxxx.mongodb.net/finance-dashboard
+JWT_SECRET=your_jwt_secret_key_here
+```
+
+### Step 3: Seed Database (Optional)
+To test the application with realistic analytics instantly, you can seed the database with 53 transactions spread over 5 months (January–May 2026).
+
+1. Log in or register an account via the browser interface.
+2. Retrieve your Account `_id` (from MongoDB Atlas or Network logs).
+3. Paste the ID into `Backend/seed.js` or run:
+```bash
+cd Backend
+node seed.js <your_user_id>
+```
+
+### Step 4: Run the Servers
+Open two terminal windows to run both servers concurrently:
+
+**Terminal 1 (Backend Dev Server)**:
+```bash
+cd Backend
+npm run dev
+# Starts on http://localhost:3000
+```
+
+**Terminal 2 (Frontend React App)**:
+```bash
+cd Frontend
+npm run dev
+# Starts on http://localhost:5173
+```
+
+---
+
+## 🔒 Security Practices Done Right
+* **HTTP-Only Cookies**: JWT auth tokens are assigned via `httpOnly` cookies with `sameSite: 'lax'` configurations, effectively mitigating standard **Cross-Site Scripting (XSS)** and **CSRF** threats.
+* **Route Guards**:
+  * `ProtectedRoute`: Redirects unauthenticated users to `/login`.
+  * `AuthRoute`: Blocks authenticated users from returning to Login/Register pages.
+* **Isolated User Scope**: Backend validation guarantees that a user can only perform read/write/delete tasks on transaction records bound strictly to their user ID.

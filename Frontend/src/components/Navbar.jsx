@@ -60,7 +60,7 @@ const Navbar = () => {
               <div className="flex justify-between items-center mb-10">
                 <Link to="/" onClick={() => setIsOpen(false)} className="flex items-center gap-3">
                   <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black">F</div>
-                  <span className="font-bold text-slate-900">FINANCE</span>
+                  <span className="font-bold text-slate-900">FinFlow</span>
                 </Link>
                 <button onClick={() => setIsOpen(false)} className="text-slate-400"><X size={24}/></button>
               </div>

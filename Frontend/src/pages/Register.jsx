@@ -58,7 +58,7 @@ const Register = () => {
           <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
             <Wallet className="text-white" size={22} />
           </div>
-          <span className="text-white font-black text-xl tracking-tight">FinanceFlow</span>
+          <span className="text-white font-black text-xl tracking-tight">FinFlow</span>
         </div>
 
         <div className="relative z-10 space-y-6">
@@ -90,7 +90,7 @@ const Register = () => {
             <div className="w-10 h-10 bg-indigo-600 rounded-2xl flex items-center justify-center">
               <Wallet className="text-white" size={20} />
             </div>
-            <span className="text-white font-black text-xl">FinanceFlow</span>
+            <span className="text-white font-black text-xl">FinFlow</span>
           </div>
 
           <div className="mb-8">
