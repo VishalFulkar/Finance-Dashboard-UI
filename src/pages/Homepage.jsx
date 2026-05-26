@@ -6,39 +6,53 @@ import {
 } from "recharts";
 import { LayoutDashboard, Wallet, ArrowUpRight, ArrowDownRight, CreditCard, PieChart as PieIcon, Bell } from "lucide-react";
 import { selectTransactions } from "../redux/features/financeSlice";
-import SwitchUser from "../components/SwitchUser";
+import LogoutButton from "../components/LogoutButton";
 import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
 
 const CATEGORY_COLORS = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B"];
 
+// Helper: extract month number (0-indexed) from ISO date
+const getMonth = (iso) => new Date(iso).getMonth();
+const getYear  = (iso) => new Date(iso).getFullYear();
+const getDay   = (iso) => new Date(iso).getDate();
+
 const Homepage = () => {
   const transactions = useSelector(selectTransactions);
   const user = useSelector((state) => state.auth?.user);
 
-  const CURRENT_MONTH = "03"; 
-  const MONTH_LABEL = "March";
+  const now = new Date();
+  const CURRENT_MONTH = now.getMonth();       // 0-indexed
+  const CURRENT_YEAR  = now.getFullYear();
+  const MONTH_LABEL   = now.toLocaleString('default', { month: 'long' });
+
+  const formatINR = (v) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(v);
 
   const currentMonthStats = useMemo(() => {
-    const monthData = transactions.filter(t => t.date.includes(`-${CURRENT_MONTH}-2026`));
-    const income = monthData.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const monthData = transactions.filter(t => getMonth(t.date) === CURRENT_MONTH && getYear(t.date) === CURRENT_YEAR);
+    const income   = monthData.filter(t => t.type === "income").reduce((s, t) => s + t.amount, 0);
     const expenses = monthData.filter(t => t.type === "expense").reduce((s, t) => s + t.amount, 0);
     return { balance: income - expenses, income, expenses };
-  }, [transactions]);
+  }, [transactions, CURRENT_MONTH, CURRENT_YEAR]);
+
+  // Build trend for last 3 months
+  const trendMonths = [2, 1, 0].map(offset => {
+    const d = new Date(CURRENT_YEAR, CURRENT_MONTH - offset, 1);
+    return { month: d.getMonth(), year: d.getFullYear(), key: `m${offset}` };
+  });
 
   const trendData = useMemo(() => {
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
-    const months = ["01", "02", "03"];
     return days.map((day) => {
       const entry = { day };
-      months.forEach((m) => {
-        const monthTransactions = transactions.filter(t => t.date.includes(`-${m}-2026`));
-        let runningTotal = 0;
+      trendMonths.forEach(({ month, year, key }) => {
+        const monthTransactions = transactions.filter(t => getMonth(t.date) === month && getYear(t.date) === year);
+        let running = 0;
         monthTransactions.forEach(t => {
-          const tDay = parseInt(t.date.split('-')[0]);
-          if (tDay <= day) runningTotal += (t.type === 'income' ? t.amount : -t.amount);
+          if (getDay(t.date) <= day) running += (t.type === 'income' ? t.amount : -t.amount);
         });
-        if (monthTransactions.length > 0) entry[`month_${m}`] = runningTotal;
+        if (monthTransactions.length > 0) entry[key] = running;
       });
       return entry;
     });
@@ -46,36 +60,34 @@ const Homepage = () => {
 
   const pieData = useMemo(() => {
     const groups = transactions
-      .filter(t => t.type === "expense" && t.date.includes(`-${CURRENT_MONTH}-2026`))
-      .reduce((acc, t) => {
-        acc[t.category] = (acc[t.category] || 0) + t.amount;
-        return acc;
-      }, {});
+      .filter(t => t.type === "expense" && getMonth(t.date) === CURRENT_MONTH && getYear(t.date) === CURRENT_YEAR)
+      .reduce((acc, t) => { acc[t.category] = (acc[t.category] || 0) + t.amount; return acc; }, {});
     return Object.entries(groups).map(([name, value]) => ({ name, value }));
-  }, [transactions]);
+  }, [transactions, CURRENT_MONTH, CURRENT_YEAR]);
 
-  const formatINR = (v) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(v);
+  const trendLabels = trendMonths.map(({ month, year }) =>
+    new Date(year, month).toLocaleString('default', { month: 'short' }).toUpperCase()
+  );
 
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#F9FBFF] text-slate-800">
+      <Navbar />
 
-      <Navbar/>
-      
       <main className="flex-1 p-4 md:p-8 lg:p-10 max-w-7xl mx-auto w-full">
-        {/* HEADER: WELCOME TOP LEFT */}
+        {/* HEADER */}
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-6">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-slate-900">Hello, {user?.name.split(" ")[0]}! 👋</h1>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900">Hello, {user?.name?.split(" ")[0]}! 👋</h1>
             <p className="text-sm text-slate-400 font-medium">Welcome back to your financial overview.</p>
           </div>
-          
+
           <div className="flex items-center gap-4 w-full sm:w-auto">
-            <SwitchUser />
+            <LogoutButton />
             <div className="flex items-center gap-3 bg-white p-1.5 pr-5 rounded-full border border-slate-100 shadow-sm">
-              <img src={user?.avatar} className="w-9 h-9 rounded-full border-2 border-indigo-50" alt="profile" />
+              <img src={user?.avatar} className="w-9 h-9 rounded-full border-2 border-indigo-50 object-cover" alt="profile" />
               <div className="flex flex-col">
                 <span className="text-xs font-bold text-slate-900 leading-tight">{user?.name}</span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{user?.currentRole}</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">{user?.role}</span>
               </div>
             </div>
           </div>
@@ -88,19 +100,19 @@ const Homepage = () => {
             <h2 className="text-3xl font-black">{formatINR(currentMonthStats.balance)}</h2>
             <Wallet className="absolute -right-4 -bottom-4 opacity-10 w-28 h-28 rotate-12 transition-transform group-hover:scale-110" />
           </div>
-          <SummaryCard title={`${MONTH_LABEL} Income`} val={formatINR(currentMonthStats.income)} icon={<ArrowUpRight />} color="text-emerald-500" />
+          <SummaryCard title={`${MONTH_LABEL} Income`}  val={formatINR(currentMonthStats.income)}   icon={<ArrowUpRight />}   color="text-emerald-500" />
           <SummaryCard title={`${MONTH_LABEL} Spending`} val={formatINR(currentMonthStats.expenses)} icon={<ArrowDownRight />} color="text-rose-500" />
         </div>
 
-        {/* CHARTS SECTION */}
+        {/* CHARTS */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10 items-stretch">
           <Link to='/statistics' className="lg:col-span-8 bg-white p-7 rounded-[2.5rem] border border-slate-50 shadow-sm hover:scale-101 transition">
             <div className="flex justify-between items-center mb-10">
               <h3 className="font-bold text-slate-800 text-lg">Wealth Progression</h3>
               <div className="flex gap-4 text-[9px] font-black uppercase tracking-widest">
-                <span className="flex items-center gap-1.5 text-slate-300"><div className="w-2 h-2 rounded-full bg-slate-200"/> JAN</span>
-                <span className="flex items-center gap-1.5 text-indigo-300"><div className="w-2 h-2 rounded-full bg-indigo-200"/> FEB</span>
-                <span className="flex items-center gap-1.5 text-pink-500"><div className="w-2 h-2 rounded-full bg-pink-500 shadow-sm shadow-pink-200"/> MAR</span>
+                <span className="flex items-center gap-1.5 text-slate-300"><div className="w-2 h-2 rounded-full bg-slate-200"/> {trendLabels[0]}</span>
+                <span className="flex items-center gap-1.5 text-indigo-300"><div className="w-2 h-2 rounded-full bg-indigo-200"/> {trendLabels[1]}</span>
+                <span className="flex items-center gap-1.5 text-pink-500"><div className="w-2 h-2 rounded-full bg-pink-500 shadow-sm shadow-pink-200"/> {trendLabels[2]}</span>
               </div>
             </div>
             <div className="h-64">
@@ -110,9 +122,9 @@ const Homepage = () => {
                   <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94A3B8' }} />
                   <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94A3B8' }} tickFormatter={v => `₹${v/1000}k`} />
                   <Tooltip contentStyle={{ borderRadius: "18px", border: "none", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.05)" }} />
-                  <Line type="monotone" dataKey="month_01" stroke="#E2E8F0" strokeWidth={2} dot={false} connectNulls strokeDasharray="4 4" />
-                  <Line type="monotone" dataKey="month_02" stroke="#C7D2FE" strokeWidth={2} dot={false} connectNulls />
-                  <Line type="monotone" dataKey="month_03" stroke="#EC4899" strokeWidth={4} dot={{ r: 4, fill: '#EC4899', strokeWidth: 2, stroke: '#fff' }} connectNulls activeDot={{ r: 7 }} />
+                  <Line type="monotone" dataKey="m2" stroke="#E2E8F0" strokeWidth={2} dot={false} connectNulls strokeDasharray="4 4" />
+                  <Line type="monotone" dataKey="m1" stroke="#C7D2FE" strokeWidth={2} dot={false} connectNulls />
+                  <Line type="monotone" dataKey="m0" stroke="#EC4899" strokeWidth={4} dot={{ r: 4, fill: '#EC4899', strokeWidth: 2, stroke: '#fff' }} connectNulls activeDot={{ r: 7 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
@@ -140,35 +152,45 @@ const Homepage = () => {
                     <div className="w-2 h-2 rounded-full" style={{ backgroundColor: CATEGORY_COLORS[i % CATEGORY_COLORS.length] }} />
                     <span className="text-[11px] font-bold text-slate-500 group-hover:text-slate-800 transition-colors">{item.name}</span>
                   </div>
-                  <span className="text-[11px] font-black text-slate-800">{Math.round((item.value / currentMonthStats.expenses) * 100)}%</span>
+                  <span className="text-[11px] font-black text-slate-800">
+                    {currentMonthStats.expenses ? Math.round((item.value / currentMonthStats.expenses) * 100) : 0}%
+                  </span>
                 </div>
               ))}
             </div>
           </Link>
         </div>
 
-        {/* RECENT TRANSACTIONS GRID */}
+        {/* RECENT TRANSACTIONS */}
         <div className="bg-white p-8 rounded-[2.5rem] border border-slate-50 shadow-sm">
           <div className="flex justify-between items-center mb-8">
             <h3 className="font-bold text-lg text-slate-800">Recent Transactions</h3>
             <Link to='/transaction' className="text-xs font-bold text-indigo-600 hover:underline">View All</Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-            {transactions.slice(0, 4).map((t) => (
-              <div key={t.id} className="p-5 rounded-3xl bg-[#FBFCFF] border border-slate-50 flex items-center gap-4 hover:shadow-xl hover:shadow-indigo-50/50 transition-all duration-300 group">
-                <div className={`p-3.5 rounded-2xl transition-colors ${t.type === "income" ? "bg-emerald-50 text-emerald-500" : "bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500"}`}>
-                  <CreditCard size={20} />
+          {transactions.length === 0 ? (
+            <div className="text-center py-10">
+              <p className="text-slate-400 font-medium text-sm">No transactions yet. Add your first one!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              {transactions.slice(0, 4).map((t) => (
+                <div key={t._id} className="p-5 rounded-3xl bg-[#FBFCFF] border border-slate-50 flex items-center gap-4 hover:shadow-xl hover:shadow-indigo-50/50 transition-all duration-300 group">
+                  <div className={`p-3.5 rounded-2xl transition-colors ${t.type === "income" ? "bg-emerald-50 text-emerald-500" : "bg-slate-100 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-500"}`}>
+                    <CreditCard size={20} />
+                  </div>
+                  <div className="flex-1 overflow-hidden">
+                    <p className="text-xs font-black text-slate-800 truncate">{t.description}</p>
+                    <p className="text-[10px] text-slate-400 font-medium">
+                      {new Date(t.date).toLocaleDateString('en-GB')}
+                    </p>
+                  </div>
+                  <p className={`text-xs font-black ${t.type === "income" ? "text-emerald-500" : "text-slate-700"}`}>
+                    {t.type === "income" ? "+" : "-"}₹{t.amount.toLocaleString('en-IN')}
+                  </p>
                 </div>
-                <div className="flex-1 overflow-hidden">
-                  <p className="text-xs font-black text-slate-800 truncate">{t.description}</p>
-                  <p className="text-[10px] text-slate-400 font-medium">{t.date}</p>
-                </div>
-                <p className={`text-xs font-black ${t.type === "income" ? "text-emerald-500" : "text-slate-700"}`}>
-                  {t.type === "income" ? "+" : "-"}₹{t.amount}
-                </p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </main>
     </div>

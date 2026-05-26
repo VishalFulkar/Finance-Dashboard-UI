@@ -1,55 +1,93 @@
-import { createSelector, createSlice } from "@reduxjs/toolkit"
-import { initialData } from "../../data/mockData"
+import { createAsyncThunk, createSelector, createSlice } from "@reduxjs/toolkit";
+import { api } from "../../services/api";
+
+// ─── Async Thunks ───────────────────────────────────────────────────────────
+
+export const fetchTransactions = createAsyncThunk(
+    'finance/fetchAll',
+    async (_, { rejectWithValue }) => {
+        try {
+            return await api.get('/transaction/get-transaction');
+        } catch (err) {
+            return rejectWithValue(err.message);
+        }
+    }
+);
+
+export const createTransaction = createAsyncThunk(
+    'finance/create',
+    async (data, { dispatch, rejectWithValue }) => {
+        try {
+            await api.post('/transaction/add-transaction', data);
+            dispatch(fetchTransactions()); // Refresh list after adding
+        } catch (err) {
+            return rejectWithValue(err.message);
+        }
+    }
+);
+
+export const updateTransactionAPI = createAsyncThunk(
+    'finance/update',
+    async ({ id, data }, { dispatch, rejectWithValue }) => {
+        try {
+            await api.put(`/transaction/edit-transaction/${id}`, data);
+            dispatch(fetchTransactions());
+        } catch (err) {
+            return rejectWithValue(err.message);
+        }
+    }
+);
+
+export const deleteTransactionAPI = createAsyncThunk(
+    'finance/delete',
+    async (id, { dispatch, rejectWithValue }) => {
+        try {
+            await api.del(`/transaction/delete-transaction/${id}`);
+            dispatch(fetchTransactions());
+        } catch (err) {
+            return rejectWithValue(err.message);
+        }
+    }
+);
+
+// ─── Slice ───────────────────────────────────────────────────────────────────
 
 const financeSlice = createSlice({
-  name: "finance",
-  initialState: initialData,
-  reducers: {
-    addTransaction: (state, action) => {
-      state.transactions.push(action.payload);
+    name: 'finance',
+    initialState: {
+        transactions: [],
+        totalBalance: 0,
+        loading: false,
+        error: null,
     },
-    deleteTransaction: (state, action) => {
-      state.transactions = state.transactions.filter(
-        (item) => item.id !== action.payload,
-      );
-    },
-    updateTransaction: (state, action) => {
-      const index = state.transactions.findIndex(
-        (item) => item.id === action.payload.id,
-      );
-      if (index !== -1) {
-        state.transactions[index] = action.payload;
-      }
-    },
-  },
+    reducers: {},
+    extraReducers: (builder) => {
+        builder
+            .addCase(fetchTransactions.pending,   (state) => { state.loading = true; state.error = null; })
+            .addCase(fetchTransactions.fulfilled, (state, action) => {
+                state.loading = false;
+                state.transactions = action.payload.transactions;
+                state.totalBalance = action.payload.totalBalance;
+            })
+            .addCase(fetchTransactions.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload;
+            })
+    }
 });
 
-export const { addTransaction, deleteTransaction, updateTransaction } = financeSlice.actions;
 export default financeSlice.reducer;
 
-// Selectors
+// ─── Selectors ───────────────────────────────────────────────────────────────
 
 export const selectTransactions = (state) => state.finance.transactions;
-export const selectUser = (state) => state.finance.user;
+export const selectLoading = (state) => state.finance.loading;
 
 export const selectFinanceSummary = createSelector(
-  [selectTransactions],
-
-  (transactions) => {
-    const income = transactions
-      .filter((item) => item.type === "income")
-      .reduce((sum, item) => sum + item.amount, 0);
-    console.log("total income", income);
-
-    const expenses = transactions
-      .filter((item) => item.type === "expense")
-      .reduce((sum, item) => sum + item.amount, 0);
-    console.log("total expenses", expenses);
-
-    return {
-      totalBalance: income - expenses,
-      totalIncome: income,
-      totalExpenses: expenses,
-    };
-  },
+    [selectTransactions],
+    (transactions) => {
+        const income   = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
+        const expenses = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0);
+        return { totalBalance: income - expenses, totalIncome: income, totalExpenses: expenses };
+    }
 );

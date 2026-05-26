@@ -1,9 +1,19 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectTransactions, deleteTransaction } from "../redux/features/financeSlice";
+import { selectTransactions, deleteTransactionAPI } from "../redux/features/financeSlice";
 import { Trash2, Search, Plus, SquarePen, Download, Calendar, Filter } from "lucide-react";
 import AddTransactionModal from "./modal/AddTransactionModal";
 import UpdateTransactionModal from "./modal/UpdateTransactionModal";
+
+// Helper: format ISO date → "05 Jan 2026"
+const formatDate = (iso) =>
+  new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+
+// Helper: extract "YYYY-MM" from ISO string for month filtering
+const getYearMonth = (iso) => {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
 
 const TransactionTable = () => {
   const dispatch = useDispatch();
@@ -12,42 +22,59 @@ const TransactionTable = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
-  const [selectedMonth, setSelectedMonth] = useState("all"); 
-
-  // Export to CSV 
-  const downloadCSV = () => {
-    const headers = ["Date,Description,Category,Type,Amount\n"];
-    const rows = filteredTransactions.map(t => 
-      `${t.date},${t.description},${t.category},${t.type},${t.amount}`
-    ).join("\n");
-    
-    const blob = new Blob([headers + rows], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Transactions_${selectedMonth}.csv`;
-    a.click();
-  };
-
-  // Filtering Logic (Search + Type + Month)
-  const filteredTransactions = transactions.filter((item) => {
-    const matchesSearch =
-      item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesType = filterType === "all" || item.type === filterType;
-    const matchesMonth = selectedMonth === "all" || item.date.includes(selectedMonth);
-
-    return matchesSearch && matchesType && matchesMonth;
-  });
-
+  const [selectedMonth, setSelectedMonth] = useState("all");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Build month options dynamically from actual data
+  const monthOptions = [...new Set(transactions.map(t => getYearMonth(t.date)))]
+    .sort()
+    .reverse()
+    .map(ym => {
+      const [year, month] = ym.split('-');
+      const label = new Date(year, parseInt(month) - 1).toLocaleString('default', { month: 'long', year: 'numeric' });
+      return { value: ym, label };
+    });
+
+  // Export to CSV
+  const downloadCSV = () => {
+    const headers = ["Date,Description,Category,Type,Amount\n"];
+    const rows = filteredTransactions.map(t =>
+      `${formatDate(t.date)},${t.description},${t.category},${t.type},${t.amount}`
+    ).join("\n");
+    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Transactions_${selectedMonth || 'all'}.csv`;
+    a.click();
+  };
+
+  // Filtering + sorting by date (newest first)
+  const filteredTransactions = transactions
+    .filter((item) => {
+      const term = searchTerm.toLowerCase();
+      const matchesSearch =
+        item.description.toLowerCase().includes(term) ||
+        item.category.toLowerCase().includes(term) ||
+        String(item.amount).includes(term) ||
+        formatDate(item.date).toLowerCase().includes(term); // e.g. "26 may 2026"
+      const matchesType = filterType === "all" || item.type === filterType;
+      const matchesMonth = selectedMonth === "all" || getYearMonth(item.date) === selectedMonth;
+      return matchesSearch && matchesType && matchesMonth;
+    })
+    .sort((a, b) => new Date(b.date) - new Date(a.date)); // newest first
+
   const handleEditClick = (transaction) => {
     setSelectedTransaction(transaction);
     setIsEditModalOpen(true);
+  };
+
+  const handleDelete = (item) => {
+    if (window.confirm(`Delete "${item.description}"?`)) {
+      dispatch(deleteTransactionAPI(item._id));
+    }
   };
 
   return (
@@ -57,12 +84,12 @@ const TransactionTable = () => {
         <div>
           <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight">Transaction History</h2>
           <p className="text-gray-500 text-sm mt-1">
-            Showing {filteredTransactions.length} records {selectedMonth !== 'all' ? `for ${selectedMonth}` : 'overall'}
+            Showing {filteredTransactions.length} records {selectedMonth !== 'all' ? `for ${monthOptions.find(m => m.value === selectedMonth)?.label}` : 'overall'}
           </p>
         </div>
 
         <div className="flex flex-wrap gap-3">
-          {/* Search Bar */}
+          {/* Search */}
           <div className="relative grow md:grow-0">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
             <input
@@ -81,10 +108,10 @@ const TransactionTable = () => {
               onChange={(e) => setSelectedMonth(e.target.value)}
               value={selectedMonth}
             >
-              <option value="all">Overall Data</option>
-              <option value="01-2026">Jan 2026</option>
-              <option value="02-2026">Feb 2026</option>
-              <option value="03-2026">Mar 2026</option>
+              <option value="all">All Time</option>
+              {monthOptions.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
             </select>
           </div>
 
@@ -101,18 +128,18 @@ const TransactionTable = () => {
             </select>
           </div>
 
-          {/* Download Button  */}
-            <button 
-              onClick={downloadCSV}
-              className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors border border-blue-100"
-              title="Download CSV"
-            >
-              <Download size={20} />
-            </button>
+          {/* Download */}
+          <button
+            onClick={downloadCSV}
+            className="p-2.5 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl transition-colors border border-blue-100"
+            title="Download CSV"
+          >
+            <Download size={20} />
+          </button>
         </div>
       </div>
 
-      {/* Table Section */}
+      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left border-separate border-spacing-y-2">
           <thead>
@@ -121,13 +148,13 @@ const TransactionTable = () => {
               <th className="pb-4 px-4">Description</th>
               <th className="pb-4 px-4">Category</th>
               <th className="pb-4 px-4 text-right">Amount</th>
-              {user?.currentRole === "admin" && <th className="pb-4 px-4 text-center">Actions</th>}
+              <th className="pb-4 px-4 text-center">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y-0">
+          <tbody>
             {filteredTransactions.map((item) => (
-              <tr key={item.id} className="group bg-white hover:bg-blue-50/30 transition-all duration-200 shadow-sm border border-gray-100">
-                <td className="py-4 px-4 text-sm text-gray-500 rounded-l-xl">{item.date}</td>
+              <tr key={item._id} className="group bg-white hover:bg-blue-50/30 transition-all duration-200 shadow-sm border border-gray-100">
+                <td className="py-4 px-4 text-sm text-gray-500 rounded-l-xl">{formatDate(item.date)}</td>
                 <td className="py-4 px-4 text-sm font-bold text-gray-800">{item.description}</td>
                 <td className="py-4 px-4">
                   <span className="px-3 py-1 bg-gray-100 text-gray-600 text-[10px] font-bold uppercase rounded-lg">
@@ -138,18 +165,16 @@ const TransactionTable = () => {
                   {item.type === "income" ? "+" : "-"} ₹{Math.abs(item.amount).toLocaleString("en-IN")}
                 </td>
 
-                {user?.currentRole === "admin" && (
-                  <td className="py-4 px-4 text-center rounded-r-xl">
-                    <div className="flex justify-center gap-2 ">
+                <td className="py-4 px-4 text-center rounded-r-xl">
+                    <div className="flex justify-center gap-2">
                       <button onClick={() => handleEditClick(item)} className="p-1.5 text-blue-500 hover:bg-blue-100 rounded-lg">
                         <SquarePen size={18} />
                       </button>
-                      <button onClick={() => dispatch(deleteTransaction(item.id))} className="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg">
+                      <button onClick={() => handleDelete(item)} className="p-1.5 text-rose-500 hover:bg-rose-100 rounded-lg">
                         <Trash2 size={18} />
                       </button>
                     </div>
                   </td>
-                )}
               </tr>
             ))}
           </tbody>
@@ -162,26 +187,25 @@ const TransactionTable = () => {
         )}
       </div>
 
-      {/* Admin Floating Add Button */}
-      {user?.currentRole === "admin" && (
-        <div className="mt-8 flex justify-end">
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-2xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 active:scale-95"
-          >
-            <Plus size={20} weight="bold" />
-            <span className="font-bold">Add Transaction</span>
-          </button>
-        </div>
-      )}
+      {/* Add Transaction Button — available to all users */}
+      <div className="mt-8 flex justify-end">
+        <button
+          id="add-transaction-btn"
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-2xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 active:scale-95"
+        >
+          <Plus size={20} />
+          <span className="font-bold">Add Transaction</span>
+        </button>
+      </div>
 
       {/* Modals */}
       <AddTransactionModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-      <UpdateTransactionModal 
-        isOpen={isEditModalOpen} 
-        onClose={() => setIsEditModalOpen(false)} 
-        transaction={selectedTransaction} 
-        key={selectedTransaction?.id}
+      <UpdateTransactionModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        transaction={selectedTransaction}
+        key={selectedTransaction?._id}
       />
     </div>
   );

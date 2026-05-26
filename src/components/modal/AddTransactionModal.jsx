@@ -1,43 +1,39 @@
-import React, { useState } from 'react'
-import { useDispatch } from 'react-redux'
-import { addTransaction } from '../../redux/features/financeSlice'
-import { X } from 'lucide-react'
+import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
+import { createTransaction } from '../../redux/features/financeSlice';
+import { X } from 'lucide-react';
 
+const CATEGORIES = ['Food', 'Housing', 'Salary', 'Shopping', 'Utilities', 'Transport', 'Health', 'Entertainment', 'Income', 'Other'];
 
 const AddTransactionModal = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     description: '',
     amount: '',
     category: 'Food',
     type: 'expense',
-    date: new Date().toLocaleDateString('en-GB').replace(/\//g, '-') 
+    date: new Date().toISOString().split('T')[0], // "YYYY-MM-DD" for date input
   });
-
-  
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newTransaction = {
+    setLoading(true);
+    await dispatch(createTransaction({
       ...formData,
-      id: `t${Date.now()}`, 
       amount: parseFloat(formData.amount),
-    };
-
-    dispatch(addTransaction(newTransaction));
-    onClose(); 
-    setFormData({ description: '', amount: '', category: 'Food', type: 'expense', date: formData.date });
+    }));
+    setLoading(false);
+    onClose();
+    setFormData({ description: '', amount: '', category: 'Food', type: 'expense', date: new Date().toISOString().split('T')[0] });
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative animate-in fade-in zoom-in duration-200">
-        <button 
-          onClick={onClose}
-          className="absolute right-4 top-4 text-gray-400 hover:text-gray-600"
-        >
+        <button onClick={onClose} className="absolute right-4 top-4 text-gray-400 hover:text-gray-600">
           <X size={20} />
         </button>
 
@@ -51,7 +47,8 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
               type="text"
               className="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
               placeholder="e.g. Monthly Rent"
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
 
@@ -61,16 +58,19 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
               <input
                 required
                 type="number"
+                min="1"
                 className="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-blue-500 outline-none"
                 placeholder="0.00"
-                onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                value={formData.amount}
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-              <select 
+              <select
                 className="w-full border rounded-lg p-2.5 bg-white outline-none"
-                onChange={(e) => setFormData({...formData, type: e.target.value})}
+                value={formData.type}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
               >
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
@@ -80,25 +80,32 @@ const AddTransactionModal = ({ isOpen, onClose }) => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-            <select 
+            <select
               className="w-full border rounded-lg p-2.5 bg-white outline-none"
-              onChange={(e) => setFormData({...formData, category: e.target.value})}
+              value={formData.category}
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
-              <option value="Food">Food</option>
-              <option value="Housing">Housing</option>
-              <option value="Salary">Salary</option>
-              <option value="Shopping">Shopping</option>
-              <option value="Utilities">Utilities</option>
-              <option value="Transport">Transport</option>
-              <option value="Health">Health</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
 
-          <button 
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input
+              required
+              type="date"
+              className="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
+              value={formData.date}
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            />
+          </div>
+
+          <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors mt-4"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 rounded-lg transition-colors mt-4"
           >
-            Save Transaction
+            {loading ? 'Saving...' : 'Save Transaction'}
           </button>
         </form>
       </div>

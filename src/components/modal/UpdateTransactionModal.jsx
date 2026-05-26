@@ -1,26 +1,32 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { updateTransaction } from '../../redux/features/financeSlice';
+import { updateTransactionAPI } from '../../redux/features/financeSlice';
 import { X } from 'lucide-react';
+
+const CATEGORIES = ['Food', 'Housing', 'Salary', 'Shopping', 'Utilities', 'Transport', 'Health', 'Entertainment', 'Income', 'Other'];
 
 const UpdateTransactionModal = ({ isOpen, onClose, transaction }) => {
   const dispatch = useDispatch();
-  const [formData, setFormData] = useState(transaction || {
-    description: '',
-    amount: '',
-    category: '',
-    type: '',
-    date: ''
-  });
+  const [loading, setLoading] = useState(false);
+  const [formData, setFormData] = useState(transaction ? {
+    description: transaction.description,
+    amount: transaction.amount,
+    category: transaction.category,
+    type: transaction.type,
+    // Convert ISO date to YYYY-MM-DD for the date input
+    date: transaction.date ? new Date(transaction.date).toISOString().split('T')[0] : '',
+  } : {});
 
   if (!isOpen || !transaction) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(updateTransaction({
-      ...formData,
-      amount: parseFloat(formData.amount)
+    setLoading(true);
+    await dispatch(updateTransactionAPI({
+      id: transaction._id,
+      data: { ...formData, amount: parseFloat(formData.amount) }
     }));
+    setLoading(false);
     onClose();
   };
 
@@ -41,7 +47,7 @@ const UpdateTransactionModal = ({ isOpen, onClose, transaction }) => {
               type="text"
               value={formData.description}
               className="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
-              onChange={(e) => setFormData({...formData, description: e.target.value})}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
           </div>
 
@@ -51,17 +57,18 @@ const UpdateTransactionModal = ({ isOpen, onClose, transaction }) => {
               <input
                 required
                 type="number"
+                min="1"
                 value={formData.amount}
-                className="w-full border rounded-lg p-2.5 outline-none"
-                onChange={(e) => setFormData({...formData, amount: e.target.value})}
+                className="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-              <select 
+              <select
                 value={formData.type}
                 className="w-full border rounded-lg p-2.5 bg-white"
-                onChange={(e) => setFormData({...formData, type: e.target.value})}
+                onChange={(e) => setFormData({ ...formData, type: e.target.value })}
               >
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
@@ -69,8 +76,34 @@ const UpdateTransactionModal = ({ isOpen, onClose, transaction }) => {
             </div>
           </div>
 
-          <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-colors mt-4">
-            Update Changes
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+            <select
+              value={formData.category}
+              className="w-full border rounded-lg p-2.5 bg-white outline-none"
+              onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+            >
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+            <input
+              required
+              type="date"
+              value={formData.date}
+              className="w-full border rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
+              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 rounded-lg transition-colors mt-4"
+          >
+            {loading ? 'Saving...' : 'Update Changes'}
           </button>
         </form>
       </div>

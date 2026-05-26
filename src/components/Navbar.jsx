@@ -1,15 +1,24 @@
 import React, { useState } from 'react';
 import { 
   LayoutDashboard, CreditCard, PieChart as PieIcon, 
-  Menu, X, Bell, Settings 
+  Menu, X, LogOut
 } from 'lucide-react';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom'; 
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { logoutUser } from '../redux/features/authSlice';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const location = useLocation(); // Hook to check which route is active
+  const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    navigate('/login');
+  };
 
   const navLinks = [
     { icon: <LayoutDashboard size={22} />, label: 'Dashboard', path: '/' },
@@ -71,9 +80,6 @@ const Navbar = () => {
               </div>
 
               <div className="pt-6 border-t border-slate-100 space-y-4">
-                 <Link to="/settings" onClick={() => setIsOpen(false)} className="flex items-center gap-4 p-4 text-slate-400 font-bold hover:bg-slate-50 rounded-2xl transition-all">
-                    <Settings size={22}/> Settings
-                 </Link>
               </div>
             </motion.div>
           </>
@@ -100,8 +106,9 @@ const Navbar = () => {
         </div>
 
         <div className="mt-auto flex flex-col gap-8 text-slate-300">
-           <Link className="hover:text-indigo-500 transition-colors"><Bell size={22}/></Link>
-           <Link className="hover:text-indigo-500 transition-colors"><Settings size={22}/></Link>
+           <button onClick={handleLogout} title="Logout" className="hover:text-rose-500 transition-colors">
+             <LogOut size={22}/>
+           </button>
         </div>
       </nav>
     </>

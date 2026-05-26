@@ -3,8 +3,13 @@ import Navbar from "../components/Navbar";
 import BalanceTrendChart from "../components/BalanceTrendChart";
 import SpendingPieChart from "../components/SpendingPieChart";
 
+const getCurrentYM = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
 const Statistics = () => {
-  const [selectedMonth, setSelectedMonth] = useState("all");
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentYM());
   return (
     <div className="flex flex-col lg:flex-row min-h-screen bg-[#F9FBFF] text-slate-800">
       <Navbar />
