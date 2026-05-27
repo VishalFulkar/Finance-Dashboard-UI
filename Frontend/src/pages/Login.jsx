@@ -29,7 +29,7 @@ const Login = () => {
     <div className="min-h-screen flex bg-slate-950 font-sans">
 
       {/* ── Left Panel ────────────────────────────────────────────── */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-indigo-600 via-violet-700 to-purple-800 p-14 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-linear-to-br from-indigo-600 via-violet-700 to-purple-800 p-14 relative overflow-hidden">
         {/* Decorative blobs */}
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-indigo-900/40 rounded-full blur-3xl" />

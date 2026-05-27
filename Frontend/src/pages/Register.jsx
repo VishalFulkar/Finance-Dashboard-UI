@@ -50,7 +50,7 @@ const Register = () => {
     <div className="min-h-screen flex bg-slate-950 font-sans">
 
       {/* ── Left Panel ──────────────────────────────────────────── */}
-      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-gradient-to-br from-violet-700 via-indigo-600 to-blue-700 p-14 relative overflow-hidden">
+      <div className="hidden lg:flex flex-col justify-between w-1/2 bg-linear-to-br from-violet-700 via-indigo-600 to-blue-700 p-14 relative overflow-hidden">
         <div className="absolute -top-20 -right-20 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-violet-900/40 rounded-full blur-3xl" />
 
@@ -66,7 +66,7 @@ const Register = () => {
 
           {['Track income & expenses in real-time', 'Beautiful charts and spending insights', 'Secure cloud storage for your data', 'Access from any device, anytime'].map((text, i) => (
             <div key={i} className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-8 h-8 bg-white/10 border border-white/20 rounded-xl flex items-center justify-center shrink-0">
                 <span className="text-white font-black text-xs">{i + 1}</span>
               </div>
               <p className="text-white/80 text-sm font-medium">{text}</p>
