@@ -1,4 +1,4 @@
-# 📊 FinFlow - SaaS Wealth Progression Dashboard
+# 📊 FinFlow - Wealth Progression Dashboard
 
 A modern, full-stack **MERN (MongoDB, Express, React, Node.js)** personal finance tracker and dashboard designed with premium aesthetics, fluid micro-animations, and secure multi-user architecture. 
 
